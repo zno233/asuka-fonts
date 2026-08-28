@@ -85,17 +85,10 @@ jobs:
             "https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VERSION}/Iosevka.zip"
 
           # 提取图标字形（Mono 用于 AsukaMono，Propo 用于 AsukaSans）
-          python3 -c "
-          import zipfile
-          with zipfile.ZipFile('sources/Iosevka.zip') as zf:
-              names = [n for n in zf.namelist() if n.endswith('.ttf')]
-              for target in ['IosevkaNerdFontMono-Regular.ttf', 'IosevkaNerdFontPropo-Regular.ttf']:
-                  match = [n for n in names if n.endswith(target)]
-                  if not match:
-                      raise SystemExit(f'{target} not found in Iosevka.zip')
-                  zf.extract(match[0], 'sources/nerd-fonts/')
-                  print(f'Extracted: {match[0]}')
-          "
+          python3 scripts/extract-zip.py sources/Iosevka.zip sources/nerd-fonts \
+            --name IosevkaNerdFontMono-Regular.ttf \
+            --name IosevkaNerdFontPropo-Regular.ttf \
+            --required
           ls -lh sources/nerd-fonts/
 
       - name: Download CJK fonts
@@ -114,14 +107,7 @@ jobs:
             echo "Downloading ${spec}..."
             curl -fL -o "sources/cjk/${spec}" \
               "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/${spec}"
-            python3 -c "
-            import zipfile
-            with zipfile.ZipFile('sources/cjk/${spec}') as zf:
-                for n in zf.namelist():
-                    if n.endswith('.otf'):
-                        zf.extract(n, 'sources/cjk/')
-                        print(f'  Extracted: {n}')
-            "
+            python3 scripts/extract-zip.py "sources/cjk/${spec}" sources/cjk --suffix .otf
             rm "sources/cjk/${spec}"
           done
 
