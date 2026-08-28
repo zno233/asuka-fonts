@@ -1,0 +1,251 @@
+name: Build Asuka Fonts
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libwoff-dev \
+            ttfautohint \
+            ccache
+          pip install fonttools brotli toml
+
+      - name: Read dependency versions
+        id: deps
+        run: |
+          NF_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['nerd-fonts']['version'])")
+          NOTO_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['noto-cjk']['version'])")
+          IOSEVKA_REF=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['iosevka'].get('tag') or c['iosevka'].get('branch', 'main'))")
+
+          echo "nf_version=$NF_VERSION" >> $GITHUB_OUTPUT
+          echo "noto_version=$NOTO_VERSION" >> $GITHUB_OUTPUT
+          echo "iosevka_ref=$IOSEVKA_REF" >> $GITHUB_OUTPUT
+
+      - name: Clone Iosevka
+        run: |
+          IOSEVKA_REF=${{ steps.deps.outputs.iosevka_ref }}
+          echo "Cloning Iosevka (ref: $IOSEVKA_REF)..."
+          git clone --depth 1 --branch $IOSEVKA_REF \
+            https://github.com/be5invis/Iosevka.git sources/Iosevka
+          cd sources/Iosevka
+          npm install
+
+      - name: Build Iosevka fonts
+        run: |
+          cd sources/Iosevka
+
+          # 复制自定义构建计划
+          cp ../../private-build-plans.toml .
+
+          # 注意：Iosevka 34+ 的 verda 目标格式为 ttf::<plan>，
+          # 字重由 private-build-plans.toml 中的 [buildPlans.*.weights] 决定，
+          # 不再支持 "ttf::<plan>::<weight>" 这种 CLI 写法
+          echo "Building AsukaMono (weights: Light/Regular/Bold)..."
+          ISEVKA_FORCEOMELET=1 npm run build -- ttf::AsukaMono
+
+          echo "Building AsukaSans (weights: Light/Regular/Bold)..."
+          ISEVKA_FORCEOMELET=1 npm run build -- ttf::AsukaSans
+
+          echo "Build complete!"
+          find . -name "*.ttf" -path "*/dist/*"
+
+      - name: Download Nerd Fonts icons
+        run: |
+          NF_VERSION=${{ steps.deps.outputs.nf_version }}
+          mkdir -p sources/nerd-fonts
+
+          echo "Downloading Nerd Fonts v${NF_VERSION}..."
+          wget -q -O sources/Iosevka.zip \
+            "https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VERSION}/Iosevka.zip"
+
+          # 提取图标字形（Mono 用于 AsukaMono，Propo 用于 AsukaSans）
+          python3 -c "
+          import zipfile
+          with zipfile.ZipFile('sources/Iosevka.zip') as zf:
+              names = [n for n in zf.namelist() if n.endswith('.ttf')]
+              for target in ['IosevkaNerdFontMono-Regular.ttf', 'IosevkaNerdFontPropo-Regular.ttf']:
+                  match = [n for n in names if n.endswith(target)]
+                  if not match:
+                      raise SystemExit(f'{target} not found in Iosevka.zip')
+                  zf.extract(match[0], 'sources/nerd-fonts/')
+                  print(f'Extracted: {match[0]}')
+          "
+          ls -lh sources/nerd-fonts/
+
+      - name: Download CJK fonts
+        run: |
+          NOTO_VERSION=${{ steps.deps.outputs.noto_version }}
+          mkdir -p sources/cjk
+
+          # Noto CJK 2.004 以 zip 形式分发：
+          #   Mono (11_/13_) 仅含 Regular/Bold 两个字重
+          #   Sans (06_/08_)  含 Thin/Light/DemiLight/Regular/Medium/Bold/Black 七个字重
+          for spec in \
+              "13_NotoSansMonoCJKsc.zip" \
+              "11_NotoSansMonoCJKjp.zip" \
+              "08_NotoSansCJKsc.zip" \
+              "06_NotoSansCJKjp.zip"; do
+            echo "Downloading ${spec}..."
+            curl -fL -o "sources/cjk/${spec}" \
+              "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/${spec}"
+            python3 -c "
+            import zipfile
+            with zipfile.ZipFile('sources/cjk/${spec}') as zf:
+                for n in zf.namelist():
+                    if n.endswith('.otf'):
+                        zf.extract(n, 'sources/cjk/')
+                        print(f'  Extracted: {n}')
+            "
+            rm "sources/cjk/${spec}"
+          done
+
+          echo "Download complete!"
+          ls -lh sources/cjk/
+
+      - name: Merge Nerd Fonts icons
+        run: |
+          echo "Merging Nerd Fonts icons into built fonts..."
+
+          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
+          WEIGHTS="Light Regular Bold"
+
+          for weight in $WEIGHTS; do
+            # Mono 变体（Iosevka 输出: dist/<plan>/TTF/<Plan>-<Weight>.ttf）
+            mono_font="sources/Iosevka/dist/AsukaMono/TTF/AsukaMono-${weight}.ttf"
+            if [ -f "$mono_font" ]; then
+              echo "Patching Mono ${weight}..."
+              python3 scripts/apply-nerd-icons.py \
+                --base "$mono_font" \
+                --icons sources/nerd-fonts/IosevkaNerdFontMono-Regular.ttf \
+                --output "sources/patched/"
+            else
+              echo "WARNING: $mono_font not found"
+            fi
+
+            # Sans 变体
+            sans_font="sources/Iosevka/dist/AsukaSans/TTF/AsukaSans-${weight}.ttf"
+            if [ -f "$sans_font" ]; then
+              echo "Patching Sans ${weight}..."
+              python3 scripts/apply-nerd-icons.py \
+                --base "$sans_font" \
+                --icons sources/nerd-fonts/IosevkaNerdFontPropo-Regular.ttf \
+                --output "sources/patched/"
+            else
+              echo "WARNING: $sans_font not found"
+            fi
+          done
+
+          ls -lh sources/patched/
+
+      - name: Merge CJK fonts
+        run: |
+          echo "Merging CJK fonts..."
+
+          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
+          WEIGHTS="Light Regular Bold"
+
+          for weight in $WEIGHTS; do
+            # Mono 变体（Noto Mono CJK 没有 Light 字重，Light 回退使用 Regular）
+            mono_font="sources/patched/AsukaMono-${weight}.ttf"
+            if [ -f "$mono_font" ]; then
+              cjk_weight="$weight"
+              if [ "$cjk_weight" = "Light" ]; then
+                cjk_weight="Regular"
+              fi
+              echo "Merging CJK into Mono ${weight} (CJK weight: ${cjk_weight})..."
+              python3 scripts/merge-fonts.py \
+                --base "$mono_font" \
+                --cjk-sc "sources/cjk/NotoSansMonoCJKsc-${cjk_weight}.otf" \
+                --cjk-jp "sources/cjk/NotoSansMonoCJKjp-${cjk_weight}.otf" \
+                --output "releases/mono/"
+            else
+              echo "WARNING: $mono_font not found"
+            fi
+
+            # Sans 变体（Noto Sans CJK 含 Light 字重）
+            sans_font="sources/patched/AsukaSans-${weight}.ttf"
+            if [ -f "$sans_font" ]; then
+              echo "Merging CJK into Sans ${weight}..."
+              python3 scripts/merge-fonts.py \
+                --base "$sans_font" \
+                --cjk-sc "sources/cjk/NotoSansCJKsc-${weight}.otf" \
+                --cjk-jp "sources/cjk/NotoSansCJKjp-${weight}.otf" \
+                --output "releases/sans/"
+            else
+              echo "WARNING: $sans_font not found"
+            fi
+          done
+
+      - name: Organize releases
+        run: |
+          mkdir -p releases/final
+
+          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
+          WEIGHTS="Light Regular Bold"
+
+          for weight in $WEIGHTS; do
+            # Mono 变体
+            if [ -f "releases/mono/AsukaMono-${weight}.ttf" ]; then
+              cp "releases/mono/AsukaMono-${weight}.ttf" "releases/final/AsukaMono-${weight}.ttf"
+            else
+              echo "WARNING: releases/mono/AsukaMono-${weight}.ttf not found"
+            fi
+
+            # Sans 变体
+            if [ -f "releases/sans/AsukaSans-${weight}.ttf" ]; then
+              cp "releases/sans/AsukaSans-${weight}.ttf" "releases/final/AsukaSans-${weight}.ttf"
+            else
+              echo "WARNING: releases/sans/AsukaSans-${weight}.ttf not found"
+            fi
+          done
+
+          # 清理
+          rm -rf releases/mono releases/sans
+
+          echo "Release files:"
+          ls -lh releases/final/
+
+      - name: Verify fonts
+        run: |
+          python3 scripts/verify-fonts.py releases/final/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asuka-fonts
+          path: releases/final/*.ttf
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: releases/final/*.ttf
+          generate_release_notes: true
+          draft: false
+          prerelease: false

@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MIT
+
+# Iosevka 构建计划（官方默认）
+# 这是 Iosevka 的标准构建配置，被 private-build-plans.toml 继承
+
+[buildPlans.iosevka]
+family = "Iosevka"
+spacing = "fontconfig-mono"
+serifs = "sans"
+noCvSs = false
+exportGlyphNames = true
+
+  [buildPlans.iosevka.variants]
+  inherits = "ss10"
+
+  [buildPlans.iosevka.ligations]
+  inherits = "default"
+
+[buildPlans.iosevka-term]
+family = "Iosevka Term"
+spacing = "fontconfig-mono"
+serifs = "sans"
+noCvSs = false
+exportGlyphNames = true
+
+  [buildPlans.iosevka-term.variants]
+  inherits = "ss10"
+
+  [buildPlans.iosevka-term.ligations]
+  inherits = "default"
+
+[buildPlans.iosevka-mono]
+family = "Iosevka Mono"
+spacing = "fontconfig-mono"
+serifs = "sans"
+noCvSs = false
+exportGlyphNames = true
+
+  [buildPlans.iosevka-mono.variants]
+  inherits = "ss10"
+
+  [buildPlans.iosevka-mono.ligations]
+  inherits = "default"

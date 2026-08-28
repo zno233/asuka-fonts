@@ -1,0 +1,456 @@
+# Unicode 范围定义
+# 用于字体合并时的字符范围提取
+
+# ============================================================
+# 基础拉丁文
+# ============================================================
+
+[ascii]
+range = [0x0000, 0x007F]
+description = "Basic Latin (ASCII)"
+priority = 1
+
+[latin_extended_a]
+range = [0x0080, 0x00FF]
+description = "Latin Extended-A"
+priority = 1
+
+[latin_extended_b]
+range = [0x0100, 0x024F]
+description = "Latin Extended-B"
+priority = 1
+
+[ipa_extensions]
+range = [0x0250, 0x02AF]
+description = "IPA Extensions"
+priority = 1
+
+[spacing_modifiers]
+range = [0x02B0, 0x02FF]
+description = "Spacing Modifier Letters"
+priority = 1
+
+[diacriticals]
+range = [0x0300, 0x036F]
+description = "Combining Diacritical Marks"
+priority = 1
+
+# ============================================================
+# 希腊文和西里尔文
+# ============================================================
+
+[greek_coptic]
+range = [0x0370, 0x03FF]
+description = "Greek and Coptic"
+priority = 1
+
+[cyrillic]
+range = [0x0400, 0x04FF]
+description = "Cyrillic"
+priority = 1
+
+[cyrillic_supplement]
+range = [0x0500, 0x052F]
+description = "Cyrillic Supplement"
+priority = 2
+
+# ============================================================
+# 亚美尼亚文、希伯来文、阿拉伯文
+# ============================================================
+
+[armenian]
+range = [0x0530, 0x058F]
+description = "Armenian"
+priority = 2
+
+[hebrew]
+range = [0x0590, 0x05FF]
+description = "Hebrew"
+priority = 2
+
+[arabic]
+range = [0x0600, 0x06FF]
+description = "Arabic"
+priority = 2
+
+[arabic_supplement]
+range = [0x0750, 0x077F]
+description = "Arabic Supplement"
+priority = 3
+
+[arabic_extended_a]
+range = [0x08A0, 0x08FF]
+description = "Arabic Extended-A"
+priority = 3
+
+# ============================================================
+# 南亚和东南亚文字
+# ============================================================
+
+[devanagari]
+range = [0x0900, 0x097F]
+description = "Devanagari"
+priority = 3
+
+[bengali]
+range = [0x0980, 0x09FF]
+description = "Bengali"
+priority = 3
+
+[gurmukhi]
+range = [0x0A00, 0x0A7F]
+description = "Gurmukhi"
+priority = 3
+
+[gujarati]
+range = [0x0A80, 0x0AFF]
+description = "Gujarati"
+priority = 3
+
+[oriya]
+range = [0x0B00, 0x0B7F]
+description = "Oriya"
+priority = 3
+
+[tamil]
+range = [0x0B80, 0x0BFF]
+description = "Tamil"
+priority = 3
+
+[telugu]
+range = [0x0C00, 0x0C7F]
+description = "Telugu"
+priority = 3
+
+[kannada]
+range = [0x0C80, 0x0CFF]
+description = "Kannada"
+priority = 3
+
+[malayalam]
+range = [0x0D00, 0x0D7F]
+description = "Malayalam"
+priority = 3
+
+# ============================================================
+# 符号和标点
+# ============================================================
+
+[currency_symbols]
+range = [0x20A0, 0x20CF]
+description = "Currency Symbols"
+priority = 1
+
+[letterlike_symbols]
+range = [0x2100, 0x214F]
+description = "Letterlike Symbols"
+priority = 1
+
+[number_forms]
+range = [0x2150, 0x218F]
+description = "Number Forms"
+priority = 2
+
+[arrows]
+range = [0x2190, 0x21FF]
+description = "Arrows"
+priority = 1
+
+[math_operators]
+range = [0x2200, 0x22FF]
+description = "Mathematical Operators"
+priority = 1
+
+[misc_technical]
+range = [0x2300, 0x23FF]
+description = "Miscellaneous Technical"
+priority = 1
+
+[control_pictures]
+range = [0x2400, 0x243F]
+description = "Control Pictures"
+priority = 2
+
+[enclosed_alphanumerics]
+range = [0x2460, 0x24FF]
+description = "Enclosed Alphanumerics"
+priority = 1
+
+[box_drawing]
+range = [0x2500, 0x257F]
+description = "Box Drawing"
+priority = 1
+
+[block_elements]
+range = [0x2580, 0x259F]
+description = "Block Elements"
+priority = 1
+
+[geometric_shapes]
+range = [0x25A0, 0x25FF]
+description = "Geometric Shapes"
+priority = 1
+
+[misc_symbols]
+range = [0x2600, 0x26FF]
+description = "Miscellaneous Symbols"
+priority = 1
+
+[dingbats]
+range = [0x2700, 0x27BF]
+description = "Dingbats"
+priority = 1
+
+[math_symbols_a]
+range = [0x27C0, 0x27EF]
+description = "Miscellaneous Mathematical Symbols-A"
+priority = 2
+
+[arrows_a]
+range = [0x27F0, 0x27FF]
+description = "Supplemental Arrows-A"
+priority = 2
+
+[braille_patterns]
+range = [0x2800, 0x28FF]
+description = "Braille Patterns"
+priority = 2
+
+[arrows_b]
+range = [0x2900, 0x297F]
+description = "Supplemental Arrows-B"
+priority = 2
+
+[math_symbols_b]
+range = [0x2980, 0x29FF]
+description = "Miscellaneous Mathematical Symbols-B"
+priority = 2
+
+[math_symbols_c]
+range = [0x2A00, 0x2AFF]
+description = "Supplemental Mathematical Operators"
+priority = 2
+
+# ============================================================
+# CJK 符号和标点
+# ============================================================
+
+[cjk_symbols_punctuation]
+range = [0x3000, 0x303F]
+description = "CJK Symbols and Punctuation"
+priority = 1
+
+[enclosed_cjk_letters]
+range = [0x3200, 0x32FF]
+description = "Enclosed CJK Letters and Months"
+priority = 2
+
+[cjk_compatibility]
+range = [0x3300, 0x33FF]
+description = "CJK Compatibility"
+priority = 2
+
+# ============================================================
+# 日文假名
+# ============================================================
+
+[hiragana]
+range = [0x3040, 0x309F]
+description = "Hiragana"
+priority = 1
+
+[katakana]
+range = [0x30A0, 0x30FF]
+description = "Katakana"
+priority = 1
+
+[katakana_phonetic_extensions]
+range = [0x31F0, 0x31FF]
+description = "Katakana Phonetic Extensions"
+priority = 2
+
+# ============================================================
+# 注音和韩文
+# ============================================================
+
+[bopomofo]
+range = [0x3100, 0x312F]
+description = "Bopomofo"
+priority = 2
+
+[bopomofo_extended]
+range = [0x31A0, 0x31BF]
+description = "Bopomofo Extended"
+priority = 3
+
+[hangul_compatibility_jamo]
+range = [0x3130, 0x318F]
+description = "Hangul Compatibility Jamo"
+priority = 2
+
+[enclosed_ideographic_supplement]
+range = [0x3200, 0x32FF]
+description = "Enclosed Ideographic Supplement"
+priority = 2
+
+# ============================================================
+# CJK 统一汉字
+# ============================================================
+
+[cjk_unified_ideographs]
+range = [0x4E00, 0x9FFF]
+description = "CJK Unified Ideographs"
+priority = 1
+
+[cjk_unified_ideographs_extension_a]
+range = [0x3400, 0x4DBF]
+description = "CJK Unified Ideographs Extension A"
+priority = 2
+
+[cjk_unified_ideographs_extension_b]
+range = [0x20000, 0x2A6DF]
+description = "CJK Unified Ideographs Extension B"
+priority = 3
+
+[cjk_unified_ideographs_extension_c]
+range = [0x2A700, 0x2B73F]
+description = "CJK Unified Ideographs Extension C"
+priority = 3
+
+[cjk_unified_ideographs_extension_d]
+range = [0x2B740, 0x2B81F]
+description = "CJK Unified Ideographs Extension D"
+priority = 3
+
+[cjk_unified_ideographs_extension_e]
+range = [0x2B820, 0x2CEAF]
+description = "CJK Unified Ideographs Extension E"
+priority = 3
+
+[cjk_unified_ideographs_extension_f]
+range = [0x2CEB0, 0x2EBEF]
+description = "CJK Unified Ideographs Extension F"
+priority = 3
+
+[cjk_compatibility_ideographs]
+range = [0xF900, 0xFAFF]
+description = "CJK Compatibility Ideographs"
+priority = 2
+
+[cjk_compatibility_ideographs_supplement]
+range = [0x2F800, 0x2FA1F]
+description = "CJK Compatibility Ideographs Supplement"
+priority = 3
+
+# ============================================================
+# 韩文
+# ============================================================
+
+[hangul_syllables]
+range = [0xAC00, 0xD7AF]
+description = "Hangul Syllables"
+priority = 1
+
+[hangul_jamo]
+range = [0x1100, 0x11FF]
+description = "Hangul Jamo"
+priority = 2
+
+[hangul_jamo_extended_a]
+range = [0xA960, 0xA97F]
+description = "Hangul Jamo Extended-A"
+priority = 3
+
+[hangul_jamo_extended_b]
+range = [0xD7B0, 0xD7FF]
+description = "Hangul Jamo Extended-B"
+priority = 3
+
+# ============================================================
+# 私有使用区（Nerd Fonts 图标）
+# ============================================================
+
+[private_use_area]
+range = [0xE000, 0xF8FF]
+description = "Private Use Area (Nerd Fonts icons)"
+priority = 0  # 最高优先级
+
+# ============================================================
+# 半角和全角字符
+# ============================================================
+
+[halfwidth_forms]
+range = [0xFF00, 0xFFEF]
+description = "Halfwidth and Fullwidth Forms"
+priority = 2
+
+[fullwidth_punctuation]
+range = [0xFF01, 0xFF0F]
+description = "Fullwidth Punctuation (ASCII range)"
+priority = 2
+
+# ============================================================
+# 表情符号
+# ============================================================
+
+[emoticons]
+range = [0x1F600, 0x1F64F]
+description = "Emoticons"
+priority = 2
+
+[emoji_pictographs]
+range = [0x1F300, 0x1F5FF]
+description = "Miscellaneous Symbols and Pictographs"
+priority = 2
+
+[transport_map_symbols]
+range = [0x1F680, 0x1F6FF]
+description = "Transport and Map Symbols"
+priority = 2
+
+[supplemental_symbols]
+range = [0x1F900, 0x1F9FF]
+description = "Supplemental Symbols and Pictographs"
+priority = 2
+
+[symbols_extended_a]
+range = [0x1FA00, 0x1FA6F]
+description = "Symbols and Pictographs Extended-A"
+priority = 3
+
+[symbols_extended_b]
+range = [0x1FA70, 0x1FAFF]
+description = "Symbols and Pictographs Extended-B"
+priority = 3
+
+# ============================================================
+# 货币符号
+# ============================================================
+
+[currency_symbols_extended]
+range = [0x1F0E0, 0x1F0FF]
+description = "Currency Symbols (Supplement)"
+priority = 3
+
+# ============================================================
+# 数学符号扩展
+# ============================================================
+
+[math_symbols_extended_a]
+range = [0x1D7C0, 0x1D7FF]
+description = "Mathematical Symbols Extended-A"
+priority = 3
+
+[letter_symbols_extended]
+range = [0x1D400, 0x1D7FF]
+description = "Mathematical Alphanumeric Symbols"
+priority = 3
+
+# ============================================================
+# 优先级说明
+# ============================================================
+
+# Priority 0: 最高优先级（Nerd Fonts 图标等必须包含的）
+# Priority 1: 核心字符（ASCII、拉丁文、常见符号、CJK 基础）
+# Priority 2: 扩展字符（补充字符、常用扩展）
+# Priority 3: 罕见字符（极少使用、可选）

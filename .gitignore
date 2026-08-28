@@ -1,0 +1,30 @@
+# Asuka Fonts - Dependencies and build artifacts
+
+# Dependencies
+sources/
+node_modules/
+__pycache__/
+*.pyc
+.omo/
+.reasonix/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log

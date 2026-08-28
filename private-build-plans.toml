@@ -1,0 +1,225 @@
+# SPDX-License-Identifier: MIT
+
+# Asuka Fonts - 基于 Iosevka 的字体合并项目
+# 英文字形配置参考自 Hanekokoro Fonts (https://github.com/ShadowRZ/hanekokoro-fonts)
+
+### Asuka Mono - 等宽变体
+[buildPlans.AsukaMono]
+family = "Asuka Mono"
+spacing = "fontconfig-mono"
+serifs = "sans"
+noCvSs = true
+exportGlyphNames = false
+
+  # 构建字重（Iosevka 34+ 的字重由 build plan 的 weights 定义，
+  # 不再支持 CLI 传 "ttf::<plan>::<weight>"）
+  [buildPlans.AsukaMono.weights]
+  Light = { shape = 300, menu = 300, css = 300 }
+  Regular = { shape = 400, menu = 400, css = 400 }
+  Bold = { shape = 700, menu = 700, css = 700 }
+
+  [buildPlans.AsukaMono.variants]
+  inherits = "ss10"
+
+    [buildPlans.AsukaMono.variants.design]
+    one = "no-base-long-top-serif"
+    two = "curly-neck-serifed"
+    three = "flat-top-serifless"
+    four = "open-serifless"
+    five = "upright-flat-serifless"
+    six = "closed-contour"
+    seven = "straight-serifless-crossbar"
+    eight = "two-circles"
+    nine = "closed-contour"
+    zero = "slashed-cutout"
+    capital-a = "round-top-serifless"
+    capital-b = "standard-unilateral-serifed"
+    capital-c = "serifless"
+    capital-d = "standard-unilateral-serifed"
+    capital-e = "top-left-serifed"
+    capital-f = "top-left-serifed"
+    capital-g = "toothless-corner-serifless-hookless"
+    capital-h = "top-left-bottom-right-serifed"
+    capital-i = "short-serifed"
+    capital-j = "flat-hook-serifed"
+    capital-k = "curly-bottom-right-serifed"
+    capital-l = "motion-serifed"
+    capital-m = "hanging-motion-serifed"
+    capital-n = "asymmetric-motion-serifed"
+    capital-p = "open-motion-serifed"
+    capital-q = "horizontal-tailed"
+    capital-r = "curly-open-top-left-and-bottom-right-serifed"
+    capital-s = "unilateral-inward-serifed"
+    capital-u = "toothless-rounded-unilateral-motion-serifed"
+    capital-v = "curly-motion-serifed"
+    capital-w = "rounded-vertical-sides-serifless"
+    capital-x = "curly-bilateral-motion-serifed"
+    capital-y = "curly-motion-serifed"
+    capital-z = "curly-serifless"
+    a = "single-storey-earless-corner-serifless"
+    b = "toothless-rounded-serifless"
+    c = "unilateral-serifed"
+    d = "toothless-rounded-serifless"
+    e = "rounded"
+    f = "flat-hook-serifless"
+    g = "single-storey-flat-hook-earless-rounded"
+    h = "tailed-motion-serifed"
+    i = "serifed-diagonal-tailed"
+    j = "diagonal-tailed-serifed"
+    k = "curly-top-left-serifed"
+    l = "serifed-diagonal-tailed"
+    m = "earless-rounded-double-arch-short-leg-tailed-serifless"
+    n = "earless-corner-tailed-serifless"
+    p = "earless-rounded-serifless"
+    q = "earless-rounded-straight-serifless"
+    r = "earless-rounded-serifless"
+    s = "serifless"
+    t = "diagonal-tailed-short-neck"
+    u = "toothless-rounded-motion-serifed"
+    v = "curly-motion-serifed"
+    w = "cursive-serifless"
+    x = "semi-chancery-curly-serifless"
+    y = "cursive-flat-hook-motion-serifed"
+    z = "curly-serifless"
+    capital-eszet = "rounded-serifless"
+    long-s = "flat-hook-tailed"
+    eszet = "longs-s-lig-tailed-serifless"
+    lower-beta = "cursive"
+    capital-gamma = "top-right-serifed"
+    capital-delta = "curly"
+    lower-delta = "flat-top"
+    lower-eta = "earless-rounded-serifless"
+    lower-theta = "cursive"
+    lower-iota = "semi-tailed"
+    lower-kappa = "straight-top-right-serifed"
+    capital-lambda = "curly-serifless"
+    lower-lambda = "curly-turn"
+    lower-mu = "toothless-rounded-motion-serifed"
+    lower-xi = "rounded"
+    lower-pi = "tailless"
+    lower-tau = "semi-tailed"
+    lower-upsilon = "casual-serifed"
+    lower-phi = "neo-hellenic"
+    lower-chi = "semi-chancery-curly-serifless"
+    lower-psi = "flat-top-serifless"
+    cyrl-a = "double-storey-hook-inward-serifed-toothless-rounded"
+    cyrl-ve = "cursive"
+    cyrl-capital-zhe = "cursive"
+    cyrl-zhe = "cursive"
+    cyrl-capital-ze = "unilateral-inward-serifed"
+    cyrl-ze = "unilateral-inward-serifed"
+    cyrl-capital-er = "open-serifless"
+    cyrl-er = "earless-rounded-serifed"
+    cyrl-capital-u = "straight-motion-serifed"
+    cyrl-u = "straight-motion-serifed"
+    cyrl-ef = "cursive"
+    cyrl-che = "tailed"
+    cyrl-yeri = "round"
+    cyrl-yery = "round"
+    cyrl-capital-ya = "standing-serifless"
+    cyrl-ya = "standing-serifless"
+    tittle = "round"
+    tilde = "low"
+    asterisk = "turn-hex-low"
+    caret = "low"
+    paren = "flat-arc"
+    brace = "curly-flat-boundary"
+    guillemet = "curly"
+    ampersand = "flat-top"
+    at = "threefold-solid-inner"
+    dollar = "open-cap"
+    percent = "rings-segmented-slash"
+    question = "corner-flat-hooked"
+    pilcrow = "curved"
+    lig-neq = "vertical"
+    lig-equal-chain = "without-notch"
+    lig-hyphen-chain = "without-notch"
+    lig-double-arrow-bar = "without-notch"
+    lig-single-arrow-bar = "without-notch"
+
+  [buildPlans.AsukaMono.ligations]
+  inherits = "dlig"
+
+  [buildPlans.AsukaMono.namingOverride]
+  manufacturer = "Asuka Fonts Project"
+  description = "Iosevka-based mono with Nerd Font icons and monospace CJK support"
+
+### Asuka Sans - 比例变体
+[buildPlans.AsukaSans]
+family = "Asuka Sans"
+spacing = "quasi-proportional"
+serifs = "sans"
+noCvSs = true
+exportGlyphNames = false
+
+  # 构建字重（Iosevka 34+ 的字重由 build plan 的 weights 定义，
+  # 不再支持 CLI 传 "ttf::<plan>::<weight>"）
+  [buildPlans.AsukaSans.weights]
+  Light = { shape = 300, menu = 300, css = 300 }
+  Regular = { shape = 400, menu = 400, css = 400 }
+  Bold = { shape = 700, menu = 700, css = 700 }
+
+  [buildPlans.AsukaSans.variants]
+  inherits = "ss20"
+
+    [buildPlans.AsukaSans.variants.design]
+    one = "no-base-long-top-serif"
+    three = "flat-top-serifless"
+    four = "open-non-crossing-serifless"
+    five = "upright-flat-serifless"
+    six = "closed-contour"
+    seven = "curly-serifless"
+    eight = "two-circles"
+    nine = "closed-contour"
+    zero = "reverse-slashed-cutout"
+    capital-a = "round-top-serifless"
+    capital-b = "standard-interrupted-serifless"
+    capital-g = "toothless-rounded-serifless-hooked"
+    capital-i = "short-serifed"
+    capital-j = "descending-serifless"
+    capital-l = "serifless"
+    capital-p = "open-serifless"
+    capital-q = "horizontal-tailed"
+    capital-r = "curly-open-serifless"
+    capital-w = "rounded-vertical-sides-serifless"
+    a = "single-storey-earless-rounded-tailed"
+    b = "toothless-rounded-serifless"
+    d = "toothless-corner-serifless"
+    e = "rounded"
+    f = "flat-hook-serifless-crossbar-at-x-height"
+    g = "single-storey-flat-hook-earless-rounded"
+    i = "serifless"
+    j = "diagonal-tailed-serifless"
+    l = "diagonal-tailed"
+    m = "earless-corner-double-arch-serifless"
+    n = "earless-corner-straight-serifless"
+    p = "earless-rounded-serifless"
+    q = "earless-corner-diagonal-tailed-serifless"
+    r = "compact-serifless"
+    t = "diagonal-tailed"
+    u = "toothless-rounded-serifless"
+    w = "cursive-serifless"
+    x = "semi-chancery-straight-serifless"
+    y = "cursive-serifless"
+    eszet = "longs-s-lig-serifless"
+    lower-delta = "flat-top"
+    asterisk = "hex-low"
+    paren = "large-contour"
+    brace = "curly-flat-boundary"
+    ampersand = "upper-open"
+    at = "fourfold-solid-inner"
+    dollar = "through-cap"
+    question = "corner-flat-hooked"
+    pilcrow = "curved"
+    lig-neq = "vertical"
+    lig-equal-chain = "without-notch"
+    lig-hyphen-chain = "without-notch"
+
+  [buildPlans.AsukaSans.namingOverride]
+  manufacturer = "Asuka Fonts Project"
+  description = "Iosevka-based sans with Nerd Font icons and proportional CJK support"
+
+  [buildPlans.AsukaSans.widths.Normal]
+  shape = 548
+  menu = 5
+  css = "normal"
