@@ -6,6 +6,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -117,47 +120,58 @@ jobs:
       - name: Merge Nerd Fonts icons
         run: |
           echo "Merging Nerd Fonts icons into built fonts..."
+          mkdir -p sources/patched
 
-          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
+          # 只处理 Upright 样式（Nerd Fonts 只有 Regular 字重，CJK 只有 Upright）
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
-            # Mono 变体（Iosevka 输出: dist/<plan>/TTF/<Plan>-<Weight>.ttf）
-            mono_font="sources/Iosevka/dist/AsukaMono/TTF/AsukaMono-${weight}.ttf"
-            if [ -f "$mono_font" ]; then
-              echo "Patching Mono ${weight}..."
+            # Iosevka 输出可能在 TTF/ 或 TTF-Unhinted/ 目录
+            mono_font=""
+            for dir in TTF TTF-Unhinted; do
+              candidate="sources/Iosevka/dist/AsukaMono/${dir}/AsukaMono-${weight}.ttf"
+              if [ -f "$candidate" ]; then
+                mono_font="$candidate"
+                break
+              fi
+            done
+            if [ -n "$mono_font" ]; then
+              echo "Patching Mono ${weight} (from $mono_font)..."
               python3 scripts/apply-nerd-icons.py \
                 --base "$mono_font" \
                 --icons sources/nerd-fonts/IosevkaNerdFontMono-Regular.ttf \
                 --output "sources/patched/"
-            else
-              echo "WARNING: $mono_font not found"
             fi
 
-            # Sans 变体
-            sans_font="sources/Iosevka/dist/AsukaSans/TTF/AsukaSans-${weight}.ttf"
-            if [ -f "$sans_font" ]; then
-              echo "Patching Sans ${weight}..."
+            sans_font=""
+            for dir in TTF TTF-Unhinted; do
+              candidate="sources/Iosevka/dist/AsukaSans/${dir}/AsukaSans-${weight}.ttf"
+              if [ -f "$candidate" ]; then
+                sans_font="$candidate"
+                break
+              fi
+            done
+            if [ -n "$sans_font" ]; then
+              echo "Patching Sans ${weight} (from $sans_font)..."
               python3 scripts/apply-nerd-icons.py \
                 --base "$sans_font" \
                 --icons sources/nerd-fonts/IosevkaNerdFontPropo-Regular.ttf \
                 --output "sources/patched/"
-            else
-              echo "WARNING: $sans_font not found"
             fi
           done
 
+          echo "Patched fonts:"
           ls -lh sources/patched/
 
       - name: Merge CJK fonts
         run: |
           echo "Merging CJK fonts..."
+          mkdir -p releases/mono releases/sans
 
-          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
-            # Mono 变体（Noto Mono CJK 没有 Light 字重，Light 回退使用 Regular）
+            # Mono（Noto Mono CJK 没有 Light，回退 Regular）
             mono_font="sources/patched/AsukaMono-${weight}.ttf"
             if [ -f "$mono_font" ]; then
               cjk_weight="$weight"
@@ -170,11 +184,9 @@ jobs:
                 --cjk-sc "sources/cjk/NotoSansMonoCJKsc-${cjk_weight}.otf" \
                 --cjk-jp "sources/cjk/NotoSansMonoCJKjp-${cjk_weight}.otf" \
                 --output "releases/mono/"
-            else
-              echo "WARNING: $mono_font not found"
             fi
 
-            # Sans 变体（Noto Sans CJK 含 Light 字重）
+            # Sans（Noto Sans CJK 有 Light 字重）
             sans_font="sources/patched/AsukaSans-${weight}.ttf"
             if [ -f "$sans_font" ]; then
               echo "Merging CJK into Sans ${weight}..."
@@ -183,35 +195,17 @@ jobs:
                 --cjk-sc "sources/cjk/NotoSansCJKsc-${weight}.otf" \
                 --cjk-jp "sources/cjk/NotoSansCJKjp-${weight}.otf" \
                 --output "releases/sans/"
-            else
-              echo "WARNING: $sans_font not found"
             fi
           done
+
+          echo "Merged fonts:"
+          ls -lh releases/mono/ releases/sans/
 
       - name: Organize releases
         run: |
           mkdir -p releases/final
-
-          # 与 private-build-plans.toml 中 [buildPlans.*.weights] 保持一致（首字母大写）
-          WEIGHTS="Light Regular Bold"
-
-          for weight in $WEIGHTS; do
-            # Mono 变体
-            if [ -f "releases/mono/AsukaMono-${weight}.ttf" ]; then
-              cp "releases/mono/AsukaMono-${weight}.ttf" "releases/final/AsukaMono-${weight}.ttf"
-            else
-              echo "WARNING: releases/mono/AsukaMono-${weight}.ttf not found"
-            fi
-
-            # Sans 变体
-            if [ -f "releases/sans/AsukaSans-${weight}.ttf" ]; then
-              cp "releases/sans/AsukaSans-${weight}.ttf" "releases/final/AsukaSans-${weight}.ttf"
-            else
-              echo "WARNING: releases/sans/AsukaSans-${weight}.ttf not found"
-            fi
-          done
-
-          # 清理
+          cp releases/mono/*.ttf releases/final/ 2>/dev/null || true
+          cp releases/sans/*.ttf releases/final/ 2>/dev/null || true
           rm -rf releases/mono releases/sans
 
           echo "Release files:"
