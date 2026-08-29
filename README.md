@@ -13,11 +13,11 @@
 
 ## 特性
 
-- ✅ Hanekokoro 自定义 Iosevka 字形设计
+- ✅ 自定义 Iosevka 字形设计
 - ✅ Nerd Fonts 图标支持（~9000+ 图标）
 - ✅ CJK 字符支持（中日韩统一汉字）
 - ✅ 两种变体：Sans（比例）和 Mono（等宽）
-- ✅ 多字重支持（Thin/Light/Regular/Medium/SemiBold/Bold/ExtraBold/Heavy）
+- ✅ 多字重支持（Light/Regular/Bold）
 
 ## 构建配置
 
@@ -68,18 +68,12 @@ cp AsukaMono-Regular.ttf AsukaSans-Regular.ttf ~/Library/Fonts/
 # kitty - 等宽（终端）
 font_family Asuka Mono
 
-# kitty - 比例（阅读）
-font_family Asuka Sans
-
 # alacritty
 [font]
 family = "Asuka Mono"
 
 # ghostty
 font-family = Asuka Mono
-
-# waybar
-font = Asuka Mono 12
 ```
 
 ## 依赖管理
