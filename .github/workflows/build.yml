@@ -44,12 +44,12 @@ jobs:
         run: |
           NF_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['nerd-fonts']['version'])")
           LXGW_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['lxgw-wenkai']['version'])")
-          SMILEY_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['smiley-sans']['version'])")
+          WENYUAN_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['wenyuan-rounded']['version'])")
           IOSEVKA_REF=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['iosevka'].get('tag') or c['iosevka'].get('branch', 'main'))")
 
           echo "nf_version=$NF_VERSION" >> $GITHUB_OUTPUT
           echo "lxgw_version=$LXGW_VERSION" >> $GITHUB_OUTPUT
-          echo "smiley_version=$SMILEY_VERSION" >> $GITHUB_OUTPUT
+          echo "wenyuan_version=$WENYUAN_VERSION" >> $GITHUB_OUTPUT
           echo "iosevka_ref=$IOSEVKA_REF" >> $GITHUB_OUTPUT
 
       - name: Clone Iosevka
@@ -110,18 +110,16 @@ jobs:
           echo "Download complete!"
           ls -lh sources/non-latin/LXGWWenKaiMono-*.ttf
 
-      - name: Download Smiley Sans
+      - name: Download WenYuan Rounded SC
         run: |
-          SMILEY_VERSION=${{ steps.deps.outputs.smiley_version }}
+          WENYUAN_VERSION=${{ steps.deps.outputs.wenyuan_version }}
           mkdir -p sources/non-latin
 
-          echo "Downloading Smiley Sans v${SMILEY_VERSION}..."
-          curl -fL -o "sources/non-latin/smiley-sans.zip" \
-            "https://github.com/atelier-anchor/smiley-sans/releases/download/v${SMILEY_VERSION}/smiley-sans-v${SMILEY_VERSION}.zip"
-          python3 scripts/extract-zip.py "sources/non-latin/smiley-sans.zip" sources/non-latin --suffix .ttf
-          rm "sources/non-latin/smiley-sans.zip"
+          echo "Downloading WenYuan Rounded SC v${WENYUAN_VERSION}..."
+          curl -fL -o "sources/non-latin/WenYuanRoundedSCVF.ttf" \
+            "https://github.com/takushun-wu/WenYuanFonts/releases/download/v${WENYUAN_VERSION}/WenYuanRoundedSCVF.ttf"
 
-          echo "Extracted files:"
+          echo "Download complete!"
           ls -lh sources/non-latin/
 
       - name: Merge Nerd Fonts icons
@@ -198,18 +196,18 @@ jobs:
               fi
             fi
 
-            # Sans（使用 Smiley Sans）
+            # Sans（使用文源圆体）
             sans_font="sources/patched/AsukaSans-${weight}.ttf"
             if [ -f "$sans_font" ]; then
-              SMILEY_TTF=$(find sources/non-latin -name "*.ttf" -not -name "LXGWWenKai*" -type f | head -1)
-              if [ -n "$SMILEY_TTF" ]; then
-                echo "Merging Smiley Sans ($SMILEY_TTF) into AsukaSans ${weight}..."
+              WENYUAN_TTF="sources/non-latin/WenYuanRoundedSCVF.ttf"
+              if [ -f "$WENYUAN_TTF" ]; then
+                echo "Merging WenYuan Rounded SC into AsukaSans ${weight}..."
                 python3 scripts/merge-fonts.py \
                   --base "$sans_font" \
-                  --non-latin "$SMILEY_TTF" \
+                  --non-latin "$WENYUAN_TTF" \
                   --output "releases/sans/"
               else
-                echo "Warning: No Smiley Sans ttf found, skipping AsukaSans ${weight}"
+                echo "Warning: $WENYUAN_TTF not found, skipping AsukaSans ${weight}"
               fi
             fi
           done

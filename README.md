@@ -9,7 +9,7 @@
 | **英文字形** | [Iosevka](https://github.com/be5invis/Iosevka) + Asuka 构建配置 | 自定义字形变体 |
 | **图标** | [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) | 终端图标支持 |
 | **Mono CJK** | [LXGW WenKai Mono](https://github.com/lxgw/LxgwWenKai) | 等宽字体的非西文字符 |
-| **Sans CJK** | [Smiley Sans](https://github.com/atelier-anchor/smiley-sans) | 比例字体的非西文字符 |
+| **Sans CJK** | [文源圆体](https://github.com/takushun-wu/WenYuanFonts) | 比例字体的非西文字符（简体中文优先） |
 
 ## 特性
 
@@ -34,9 +34,9 @@
 | `AsukaMono-Light` | 等宽 | Light | LXGW WenKai Mono Light | 终端、代码 |
 | `AsukaMono-Regular` | 等宽 | Regular | LXGW WenKai Mono Regular | 终端、代码 |
 | `AsukaMono-Bold` | 等宽 | Bold | LXGW WenKai Mono Medium | 终端、代码 |
-| `AsukaSans-Light` | 比例 | Light | Smiley Sans | 阅读、文档 |
-| `AsukaSans-Regular` | 比例 | Regular | Smiley Sans | 阅读、文档 |
-| `AsukaSans-Bold` | 比例 | Bold | Smiley Sans | 阅读、文档 |
+| `AsukaSans-Light` | 比例 | Light | 文源圆体 | 阅读、文档 |
+| `AsukaSans-Regular` | 比例 | Regular | 文源圆体 | 阅读、文档 |
+| `AsukaSans-Bold` | 比例 | Bold | 文源圆体 | 阅读、文档 |
 
 ## 下载
 
@@ -104,7 +104,7 @@ cd asuka-fonts
 # 2. 下载依赖
 NF_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['nerd-fonts']['version'])")
 LXGW_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['lxgw-wenkai']['version'])")
-SMILEY_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['smiley-sans']['version'])")
+WENYUAN_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['wenyuan-rounded']['version'])")
 
 mkdir -p sources
 
@@ -120,11 +120,9 @@ wget -O sources/IosevkaNerdFontSans-Regular.ttf \
 wget -O sources/LXGWWenKaiMono-Regular.ttf \
   "https://github.com/lxgw/LxgwWenKai/releases/download/v${LXGW_VERSION}/LXGWWenKaiMono-Regular.ttf"
 
-# Smiley Sans (for AsukaSans)
-wget -O sources/smiley-sans.zip \
-  "https://github.com/atelier-anchor/smiley-sans/releases/download/v${SMILEY_VERSION}/smiley-sans-v${SMILEY_VERSION}.zip"
-python3 scripts/extract-zip.py sources/smiley-sans.zip sources/ --suffix .ttf
-rm sources/smiley-sans.zip
+# WenYuan Rounded SC (for AsukaSans)
+wget -O sources/WenYuanRoundedSCVF.ttf \
+  "https://github.com/takushun-wu/WenYuanFonts/releases/download/v${WENYUAN_VERSION}/WenYuanRoundedSCVF.ttf"
 
 # 3. 构建 Asuka Mono
 python3 scripts/merge-fonts.py \
@@ -135,7 +133,7 @@ python3 scripts/merge-fonts.py \
 # 4. 构建 Asuka Sans
 python3 scripts/merge-fonts.py \
   --base sources/IosevkaNerdFontSans-Regular.ttf \
-  --non-latin sources/SmileySans.ttf \
+  --non-latin sources/WenYuanRoundedSCVF.ttf \
   --output releases/
 
 # 5. 验证
@@ -161,7 +159,7 @@ python3 scripts/verify-fonts.py releases/
 - Iosevka: OFL-1.1
 - Nerd Fonts: MIT
 - LXGW WenKai: OFL-1.1
-- Smiley Sans: OFL-1.1
+- 文源圆体: OFL-1.1
 
 ## 致谢
 
@@ -169,4 +167,4 @@ python3 scripts/verify-fonts.py releases/
 - [Hanekokoro Fonts](https://github.com/ShadowRZ/hanekokoro-fonts) - 英文字形配置参考
 - [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
 - [LXGW WenKai](https://github.com/lxgw/LxgwWenKai) - Mono 字体的非西文字符
-- [Smiley Sans](https://github.com/atelier-anchor/smiley-sans) - Sans 字体的非西文字符
+- [文源圆体](https://github.com/takushun-wu/WenYuanFonts) - Sans 字体的非西文字符（简体中文优先）

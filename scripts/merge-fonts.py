@@ -245,7 +245,7 @@ def main():
     parser.add_argument(
         "--non-latin",
         required=True,
-        help="Non-Latin font path (e.g., Smiley Sans, LXGW WenKai Mono)"
+        help="Non-Latin font path (e.g., WenYuan Rounded SC, LXGW WenKai Mono)"
     )
     parser.add_argument(
         "--output",

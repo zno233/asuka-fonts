@@ -27,10 +27,11 @@ version = "1.522"
   Regular = "LXGWWenKai-Regular.ttf"
   Medium = "LXGWWenKai-Medium.ttf"
 
-# 得意黑 - 用于 AsukaSans 的非西文字符
-[smiley-sans]
-repo = "https://github.com/atelier-anchor/smiley-sans"
-version = "2.0.1"
+# 文源圆体 - 用于 AsukaSans 的非西文字符（简体中文优先）
+[wenyuan-rounded]
+repo = "https://github.com/takushun-wu/WenYuanFonts"
+version = "1.010"
+file = "WenYuanRoundedSCVF.ttf"
 
 # Iosevka 构建字重
 [build-weights]
