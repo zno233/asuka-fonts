@@ -5,7 +5,7 @@ merge-fonts.py - 合并多个字体源为一个字体
 字体源：
 1. Iosevka（通过构建生成）- 西文字形
 2. Nerd Fonts - 图标字形（0xE000-0xF8FF）
-3. 非西文字体 - 所有非西文字符（得意黑/霞鹜文楷）
+3. 非西文字体 - 所有非西文字符（文源圆体/霞鹜文楷）
 
 输出：AsukaMono/AsukaSans 字体文件
 """
@@ -60,7 +60,7 @@ def copy_glyph(src_font, dst_font, glyph_name):
 
     支持两种源字体：
     - TrueType（glyf）：直接复制字形
-    - CFF（如得意黑的 .otf）：把三次贝塞尔轮廓转换为 TrueType 二次轮廓
+    - CFF：把三次贝塞尔轮廓转换为 TrueType 二次轮廓
     """
     if 'glyf' in src_font:
         # TrueType 源
@@ -156,7 +156,7 @@ def merge_fonts(base_path, non_latin_path, output_dir, ranges_config):
             glyphs = extract_glyphs_by_range(base_font, start, end)
             print(f"  {description}: {len(glyphs)} glyphs (from base)")
         else:
-            # 所有其他非西文字符使用非西文字体（得意黑/霞鹜文楷）
+            # 所有其他非西文字符使用非西文字体（文源圆体/霞鹜文楷）
             glyphs = extract_glyphs_by_range(non_latin_font, start, end)
             if not glyphs:
                 # 非西文字体没有覆盖此范围，尝试从基础字体提取

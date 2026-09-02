@@ -21,12 +21,6 @@ version = "1.522"
   Regular = "LXGWWenKaiMono-Regular.ttf"
   Medium = "LXGWWenKaiMono-Medium.ttf"
 
-  # 比例版本（用于 Sans）
-  [lxgw-wenkai.proportional]
-  Light = "LXGWWenKai-Light.ttf"
-  Regular = "LXGWWenKai-Regular.ttf"
-  Medium = "LXGWWenKai-Medium.ttf"
-
 # 文源圆体 - 用于 AsukaSans 的非西文字符（简体中文优先）
 [wenyuan-rounded]
 repo = "https://github.com/takushun-wu/WenYuanFonts"
