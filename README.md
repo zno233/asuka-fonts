@@ -18,6 +18,7 @@
 - ✅ 非西文字符支持（中日韩、希腊、西里尔等）
 - ✅ 两种变体：Sans（比例）和 Mono（等宽）
 - ✅ 多字重支持（Light/Regular/Bold）
+- ✅ 双格式输出：TTF + OTF
 
 ## 构建配置
 
@@ -49,6 +50,8 @@
 ```bash
 mkdir -p ~/.local/share/fonts
 cp AsukaMono-Regular.ttf AsukaSans-Regular.ttf ~/.local/share/fonts/
+# 或安装 OTF 版本
+cp AsukaMono-Regular.otf AsukaSans-Regular.otf ~/.local/share/fonts/
 fc-cache -fv
 ```
 
@@ -56,6 +59,8 @@ fc-cache -fv
 
 ```bash
 cp AsukaMono-Regular.ttf AsukaSans-Regular.ttf ~/Library/Fonts/
+# 或安装 OTF 版本
+cp AsukaMono-Regular.otf AsukaSans-Regular.otf ~/Library/Fonts/
 ```
 
 ### Windows

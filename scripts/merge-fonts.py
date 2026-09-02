@@ -17,6 +17,7 @@ import toml
 from fontTools.ttLib import TTFont, TTCollection
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
+from fontTools.pens.t2CharStringPen import T2CharStringPen
 import copy
 
 def load_unicode_ranges(config_path):
@@ -58,32 +59,39 @@ def extract_glyphs_by_range(font, start, end):
 def copy_glyph(src_font, dst_font, glyph_name):
     """复制单个字形
 
-    支持两种源字体：
-    - TrueType（glyf）：直接复制字形
-    - CFF：把三次贝塞尔轮廓转换为 TrueType 二次轮廓
+    支持两种目标格式：
+    - TrueType（glyf）：直接复制或从 CFF 转换
+    - CFF：直接复制或从 TrueType 转换
     """
-    if 'glyf' in src_font:
-        # TrueType 源
-        if glyph_name not in src_font['glyf'].glyphs:
-            return False
-        glyph = src_font['glyf'].glyphs[glyph_name]
-        dst_font['glyf'].glyphs[glyph_name] = glyph
-        _add_glyph_order(dst_font, glyph_name)
-        _add_glyph_metrics(src_font, dst_font, glyph_name)
-        return True
-    elif 'CFF ' in src_font:
-        # CFF 源：通过 Cu2QuPen 将三次曲线转成二次曲线后写入目标 glyf
+    is_dst_cff = 'CFF ' in dst_font
+    is_src_cff = 'CFF ' in src_font
+
+    if is_dst_cff:
         glyph_set = src_font.getGlyphSet()
         if glyph_name not in glyph_set:
             return False
-        tt_pen = TTGlyphPen(dst_font.getGlyphSet())
-        cu2qu_pen = Cu2QuPen(tt_pen, max_err=1.0, reverse_direction=True)
-        glyph_set[glyph_name].draw(cu2qu_pen)
-        dst_font['glyf'].glyphs[glyph_name] = tt_pen.glyph()
-        _add_glyph_order(dst_font, glyph_name)
-        _add_glyph_metrics(src_font, dst_font, glyph_name)
-        return True
-    return False
+        width = dst_font['hmtx'].metrics.get(glyph_name, (600, 0))[0]
+        t2_pen = T2CharStringPen(width, None)
+        glyph_set[glyph_name].draw(t2_pen)
+        dst_font['CFF '].cff.topDictIndex[0].CharStrings[glyph_name] = t2_pen.getCharString()
+    else:
+        if is_src_cff:
+            glyph_set = src_font.getGlyphSet()
+            if glyph_name not in glyph_set:
+                return False
+            tt_pen = TTGlyphPen(dst_font.getGlyphSet())
+            cu2qu_pen = Cu2QuPen(tt_pen, max_err=1.0, reverse_direction=True)
+            glyph_set[glyph_name].draw(cu2qu_pen)
+            dst_font['glyf'].glyphs[glyph_name] = tt_pen.glyph()
+        else:
+            if glyph_name not in src_font['glyf'].glyphs:
+                return False
+            glyph = src_font['glyf'].glyphs[glyph_name]
+            dst_font['glyf'].glyphs[glyph_name] = glyph
+
+    _add_glyph_order(dst_font, glyph_name)
+    _add_glyph_metrics(src_font, dst_font, glyph_name)
+    return True
 
 
 def _add_glyph_order(font, glyph_name):

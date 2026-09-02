@@ -68,17 +68,13 @@ jobs:
           # 复制自定义构建计划
           cp ../../private-build-plans.toml .
 
-          # 注意：Iosevka 34+ 的 verda 目标格式为 ttf::<plan>，
-          # 字重由 private-build-plans.toml 中的 [buildPlans.*.weights] 决定，
-          # 不再支持 "ttf::<plan>::<weight>" 这种 CLI 写法
-          echo "Building AsukaMono (weights: Light/Regular/Bold)..."
-          ISEVKA_FORCEOMELET=1 npm run build -- ttf::AsukaMono
-
-          echo "Building AsukaSans (weights: Light/Regular/Bold)..."
-          ISEVKA_FORCEOMELET=1 npm run build -- ttf::AsukaSans
+          echo "Building AsukaMono & AsukaSans (TTF + OTF)..."
+          ISEVKA_FORCEOMELET=1 npm run build -- \
+            ttf::AsukaMono ttf::AsukaSans \
+            otf::AsukaMono otf::AsukaSans
 
           echo "Build complete!"
-          find . -name "*.ttf" -path "*/dist/*"
+          find . -name "*.ttf" -o -name "*.otf" | grep -E "(AsukaMono|AsukaSans)" | head -20
 
       - name: Download Nerd Fonts icons
         run: |
@@ -89,11 +85,13 @@ jobs:
           wget -q -O sources/Iosevka.zip \
             "https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VERSION}/Iosevka.zip"
 
-          # 提取图标字形（Mono 用于 AsukaMono，Propo 用于 AsukaSans）
+          # 提取 TTF 图标字形（Mono 用于 AsukaMono，Propo 用于 AsukaSans）
+          # OTF 路径也使用 TTF 图标（Nerd Fonts 不提供 OTF），脚本自动处理格式转换
           python3 scripts/extract-zip.py sources/Iosevka.zip sources/nerd-fonts \
             --name IosevkaNerdFontMono-Regular.ttf \
             --name IosevkaNerdFontPropo-Regular.ttf \
             --required
+
           ls -lh sources/nerd-fonts/
 
       - name: Download LxgwWenKai Mono
@@ -101,37 +99,46 @@ jobs:
           LXGW_VERSION=${{ steps.deps.outputs.lxgw_version }}
           mkdir -p sources/non-latin
 
-          echo "Downloading LxgwWenKai Mono v${LXGW_VERSION}..."
+          echo "Downloading LxgwWenKai Mono v${LXGW_VERSION} (TTF)..."
           for weight in Light Regular Medium; do
             curl -fL -o "sources/non-latin/LXGWWenKaiMono-${weight}.ttf" \
               "https://github.com/lxgw/LxgwWenKai/releases/download/v${LXGW_VERSION}/LXGWWenKaiMono-${weight}.ttf"
           done
 
+          echo "Downloading LxgwWenKai Mono v${LXGW_VERSION} (OTF)..."
+          for weight in Light Regular Medium; do
+            curl -fL -o "sources/non-latin/LXGWWenKaiMono-${weight}.otf" \
+              "https://github.com/lxgw/LxgwWenKai/releases/download/v${LXGW_VERSION}/LXGWWenKaiMono-${weight}.otf"
+          done
+
           echo "Download complete!"
-          ls -lh sources/non-latin/LXGWWenKaiMono-*.ttf
+          ls -lh sources/non-latin/LXGWWenKaiMono-*
 
       - name: Download WenYuan Rounded SC
         run: |
           WENYUAN_VERSION=${{ steps.deps.outputs.wenyuan_version }}
           mkdir -p sources/non-latin
 
-          echo "Downloading WenYuan Rounded SC v${WENYUAN_VERSION}..."
+          echo "Downloading WenYuan Rounded SC v${WENYUAN_VERSION} (TTF)..."
           curl -fL -o "sources/non-latin/WenYuanRoundedSCVF.ttf" \
             "https://github.com/takushun-wu/WenYuanFonts/releases/download/v${WENYUAN_VERSION}/WenYuanRoundedSCVF.ttf"
 
+          echo "Downloading WenYuan Rounded SC v${WENYUAN_VERSION} (OTF)..."
+          curl -fL -o "sources/non-latin/WenYuanRoundedSCVF.otf" \
+            "https://github.com/takushun-wu/WenYuanFonts/releases/download/v${WENYUAN_VERSION}/WenYuanRoundedSCVF.otf"
+
           echo "Download complete!"
-          ls -lh sources/non-latin/
+          ls -lh sources/non-latin/WenYuanRoundedSCVF.*
 
       - name: Merge Nerd Fonts icons
         run: |
           echo "Merging Nerd Fonts icons into built fonts..."
           mkdir -p sources/patched
 
-          # 只处理 Upright 样式（Nerd Fonts 只有 Regular 字重，非西文字体只有 Upright）
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
-            # Iosevka 输出可能在 TTF/ 或 TTF-Unhinted/ 目录
+            # TTF 构建
             mono_font=""
             for dir in TTF TTF-Unhinted; do
               candidate="sources/Iosevka/dist/AsukaMono/${dir}/AsukaMono-${weight}.ttf"
@@ -141,7 +148,7 @@ jobs:
               fi
             done
             if [ -n "$mono_font" ]; then
-              echo "Patching Mono ${weight} (from $mono_font)..."
+              echo "Patching Mono ${weight} TTF (from $mono_font)..."
               python3 scripts/apply-nerd-icons.py \
                 --base "$mono_font" \
                 --icons sources/nerd-fonts/IosevkaNerdFontMono-Regular.ttf \
@@ -157,9 +164,42 @@ jobs:
               fi
             done
             if [ -n "$sans_font" ]; then
-              echo "Patching Sans ${weight} (from $sans_font)..."
+              echo "Patching Sans ${weight} TTF (from $sans_font)..."
               python3 scripts/apply-nerd-icons.py \
                 --base "$sans_font" \
+                --icons sources/nerd-fonts/IosevkaNerdFontPropo-Regular.ttf \
+                --output "sources/patched/"
+            fi
+
+            # OTF 构建（Nerd Fonts 无 OTF，使用 TTF 图标，脚本自动转 CFF）
+            mono_font_otf=""
+            for dir in OTF; do
+              candidate="sources/Iosevka/dist/AsukaMono/${dir}/AsukaMono-${weight}.otf"
+              if [ -f "$candidate" ]; then
+                mono_font_otf="$candidate"
+                break
+              fi
+            done
+            if [ -n "$mono_font_otf" ]; then
+              echo "Patching Mono ${weight} OTF (from $mono_font_otf)..."
+              python3 scripts/apply-nerd-icons.py \
+                --base "$mono_font_otf" \
+                --icons sources/nerd-fonts/IosevkaNerdFontMono-Regular.ttf \
+                --output "sources/patched/"
+            fi
+
+            sans_font_otf=""
+            for dir in OTF; do
+              candidate="sources/Iosevka/dist/AsukaSans/${dir}/AsukaSans-${weight}.otf"
+              if [ -f "$candidate" ]; then
+                sans_font_otf="$candidate"
+                break
+              fi
+            done
+            if [ -n "$sans_font_otf" ]; then
+              echo "Patching Sans ${weight} OTF (from $sans_font_otf)..."
+              python3 scripts/apply-nerd-icons.py \
+                --base "$sans_font_otf" \
                 --icons sources/nerd-fonts/IosevkaNerdFontPropo-Regular.ttf \
                 --output "sources/patched/"
             fi
@@ -176,38 +216,71 @@ jobs:
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
-            # Mono（使用 LxgwWenKai Mono）
+            # Mono TTF（使用 LxgwWenKai Mono）
             mono_font="sources/patched/AsukaMono-${weight}.ttf"
             if [ -f "$mono_font" ]; then
-              # LxgwWenKai Mono 没有 Bold 字重，回退使用 Medium
               non_latin_weight="$weight"
               if [ "$non_latin_weight" = "Bold" ]; then
                 non_latin_weight="Medium"
               fi
               LXGW_TTF="sources/non-latin/LXGWWenKaiMono-${non_latin_weight}.ttf"
               if [ -f "$LXGW_TTF" ]; then
-                echo "Merging LxgwWenKai Mono into AsukaMono ${weight} (weight: ${non_latin_weight})..."
+                echo "Merging LxgwWenKai Mono TTF into AsukaMono ${weight} (weight: ${non_latin_weight})..."
                 python3 scripts/merge-fonts.py \
                   --base "$mono_font" \
                   --non-latin "$LXGW_TTF" \
                   --output "releases/mono/"
               else
-                echo "Warning: $LXGW_TTF not found, skipping AsukaMono ${weight}"
+                echo "Warning: $LXGW_TTF not found, skipping AsukaMono ${weight} TTF"
               fi
             fi
 
-            # Sans（使用文源圆体）
+            # Mono OTF（使用 LxgwWenKai Mono）
+            mono_font_otf="sources/patched/AsukaMono-${weight}.otf"
+            if [ -f "$mono_font_otf" ]; then
+              non_latin_weight="$weight"
+              if [ "$non_latin_weight" = "Bold" ]; then
+                non_latin_weight="Medium"
+              fi
+              LXGW_OTF="sources/non-latin/LXGWWenKaiMono-${non_latin_weight}.otf"
+              if [ -f "$LXGW_OTF" ]; then
+                echo "Merging LxgwWenKai Mono OTF into AsukaMono ${weight} (weight: ${non_latin_weight})..."
+                python3 scripts/merge-fonts.py \
+                  --base "$mono_font_otf" \
+                  --non-latin "$LXGW_OTF" \
+                  --output "releases/mono/"
+              else
+                echo "Warning: $LXGW_OTF not found, skipping AsukaMono ${weight} OTF"
+              fi
+            fi
+
+            # Sans TTF（使用文源圆体）
             sans_font="sources/patched/AsukaSans-${weight}.ttf"
             if [ -f "$sans_font" ]; then
               WENYUAN_TTF="sources/non-latin/WenYuanRoundedSCVF.ttf"
               if [ -f "$WENYUAN_TTF" ]; then
-                echo "Merging WenYuan Rounded SC into AsukaSans ${weight}..."
+                echo "Merging WenYuan Rounded SC TTF into AsukaSans ${weight}..."
                 python3 scripts/merge-fonts.py \
                   --base "$sans_font" \
                   --non-latin "$WENYUAN_TTF" \
                   --output "releases/sans/"
               else
-                echo "Warning: $WENYUAN_TTF not found, skipping AsukaSans ${weight}"
+                echo "Warning: $WENYUAN_TTF not found, skipping AsukaSans ${weight} TTF"
+              fi
+            fi
+
+            # Sans OTF（使用文源圆体）
+            sans_font_otf="sources/patched/AsukaSans-${weight}.otf"
+            if [ -f "$sans_font_otf" ]; then
+              WENYUAN_OTF="sources/non-latin/WenYuanRoundedSCVF.otf"
+              if [ -f "$WENYUAN_OTF" ]; then
+                echo "Merging WenYuan Rounded SC OTF into AsukaSans ${weight}..."
+                python3 scripts/merge-fonts.py \
+                  --base "$sans_font_otf" \
+                  --non-latin "$WENYUAN_OTF" \
+                  --output "releases/sans/"
+              else
+                echo "Warning: $WENYUAN_OTF not found, skipping AsukaSans ${weight} OTF"
               fi
             fi
           done
@@ -219,7 +292,9 @@ jobs:
         run: |
           mkdir -p releases/final
           cp releases/mono/*.ttf releases/final/ 2>/dev/null || true
+          cp releases/mono/*.otf releases/final/ 2>/dev/null || true
           cp releases/sans/*.ttf releases/final/ 2>/dev/null || true
+          cp releases/sans/*.otf releases/final/ 2>/dev/null || true
           rm -rf releases/mono releases/sans
 
           echo "Release files:"
@@ -233,13 +308,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: asuka-fonts
-          path: releases/final/*.ttf
+          path: releases/final/*.{ttf,otf}
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: releases/final/*.ttf
+          files: releases/final/*.{ttf,otf}
           generate_release_notes: true
           draft: false
           prerelease: false

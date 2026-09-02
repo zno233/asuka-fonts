@@ -8,6 +8,9 @@ import os
 import sys
 
 from fontTools.ttLib import TTFont
+from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.pens.cu2quPen import Cu2QuPen
+from fontTools.pens.t2CharStringPen import T2CharStringPen
 
 
 def load_font(path):
@@ -20,14 +23,37 @@ def get_cmap(font):
 
 
 def copy_glyph(src_font, dst_font, glyph_name):
-    if glyph_name not in src_font["glyf"].glyphs:
-        return False
-    glyph = src_font["glyf"].glyphs[glyph_name]
-    dst_font["glyf"].glyphs[glyph_name] = glyph
-    # 保持 glyf.glyphOrder 与 glyphs 一致（否则保存时断言失败）
+    is_dst_cff = 'CFF ' in dst_font
+    is_src_cff = 'CFF ' in src_font
+
+    if is_dst_cff:
+        glyph_set = src_font.getGlyphSet()
+        if glyph_name not in glyph_set:
+            return False
+        width = dst_font['hmtx'].metrics.get(glyph_name, (600, 0))[0]
+        t2_pen = T2CharStringPen(width, None)
+        glyph_set[glyph_name].draw(t2_pen)
+        dst_font['CFF '].cff.topDictIndex[0].CharStrings[glyph_name] = t2_pen.getCharString()
+    else:
+        if is_src_cff:
+            glyph_set = src_font.getGlyphSet()
+            if glyph_name not in glyph_set:
+                return False
+            tt_pen = TTGlyphPen(dst_font.getGlyphSet())
+            cu2qu_pen = Cu2QuPen(tt_pen, max_err=1.0, reverse_direction=True)
+            glyph_set[glyph_name].draw(cu2qu_pen)
+            dst_font['glyf'].glyphs[glyph_name] = tt_pen.glyph()
+        else:
+            if 'glyf' not in src_font:
+                return False
+            if glyph_name not in src_font['glyf'].glyphs:
+                return False
+            glyph = src_font['glyf'].glyphs[glyph_name]
+            dst_font['glyf'].glyphs[glyph_name] = glyph
+
     if glyph_name not in dst_font.getGlyphOrder():
         dst_font.setGlyphOrder(dst_font.getGlyphOrder() + [glyph_name])
-    # 复制宽度度量，避免保存时 maxp 重算 KeyError
+
     if "hmtx" in src_font and "hmtx" in dst_font and glyph_name not in dst_font["hmtx"].metrics:
         src_metrics = src_font["hmtx"].metrics
         if glyph_name in src_metrics:
