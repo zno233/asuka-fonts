@@ -3,12 +3,11 @@
 merge-fonts.py - 合并多个字体源为一个字体
 
 字体源：
-1. Iosevka（通过构建生成）- 英文字形
+1. Iosevka（通过构建生成）- 西文字形
 2. Nerd Fonts - 图标字形（0xE000-0xF8FF）
-3. Noto Sans CJK SC - 中文字符（等宽）
-4. Noto Sans CJK JP - 日文字符（等宽）
+3. 非西文字体 - 所有非西文字符（得意黑/霞鹜文楷）
 
-输出：HanekokoroNerdCJK-Regular.ttf
+输出：AsukaMono/AsukaSans 字体文件
 """
 
 import argparse
@@ -61,7 +60,7 @@ def copy_glyph(src_font, dst_font, glyph_name):
 
     支持两种源字体：
     - TrueType（glyf）：直接复制字形
-    - CFF（如 Noto Sans CJK 的 .otf）：把三次贝塞尔轮廓转换为 TrueType 二次轮廓
+    - CFF（如得意黑的 .otf）：把三次贝塞尔轮廓转换为 TrueType 二次轮廓
     """
     if 'glyf' in src_font:
         # TrueType 源
@@ -108,7 +107,7 @@ def _add_glyph_metrics(src_font, dst_font, glyph_name):
         default = next(iter(dst_metrics.values()), (600, 0))
         dst_metrics[glyph_name] = default
 
-def merge_fonts(base_path, cjk_sc_path, cjk_jp_path, output_dir, ranges_config):
+def merge_fonts(base_path, non_latin_path, output_dir, ranges_config):
     """合并字体"""
 
     print("=" * 60)
@@ -121,8 +120,7 @@ def merge_fonts(base_path, cjk_sc_path, cjk_jp_path, output_dir, ranges_config):
     # 加载源字体
     print("\n[1/6] Loading source fonts...")
     base_font = load_font(base_path)
-    cjk_sc_font = load_font(cjk_sc_path)
-    cjk_jp_font = load_font(cjk_jp_path)
+    non_latin_font = load_font(non_latin_path)
 
     # 提取字形
     print("\n[2/6] Extracting glyphs...")
@@ -137,28 +135,35 @@ def merge_fonts(base_path, cjk_sc_path, cjk_jp_path, output_dir, ranges_config):
     # 按优先级排序
     sorted_ranges = sorted(unicode_ranges.items(), key=lambda x: x[1]['priority'])
 
+    # Latin 字符范围（从基础字体提取）
+    latin_ranges = {
+        'ascii', 'latin_extended_a', 'latin_extended_b', 'ipa_extensions',
+        'spacing_modifiers', 'diacriticals'
+    }
+
     for range_name, range_data in sorted_ranges:
         start, end = range_data['range']
         description = range_data['description']
 
-        # 跳过已经在基础字体中的范围
-        if range_name in ['private_use_area']:
+        # 跳过 PUA（Nerd Fonts 图标已在基础字体中）
+        if range_name == 'private_use_area':
             print(f"  Skipping {range_name} (icons already in base font)")
             continue
 
         # 根据字符类型选择源字体
-        if range_name.startswith('cjk_') or range_name in ['hangul_syllables', 'hangul_jamo', 'hangul_jamo_extended_a', 'hangul_jamo_extended_b']:
-            # CJK 字符使用 SC 字体
-            glyphs = extract_glyphs_by_range(cjk_sc_font, start, end)
-            print(f"  {description}: {len(glyphs)} glyphs (from CJK SC)")
-        elif range_name in ['hiragana', 'katakana', 'katakana_phonetic_extensions']:
-            # 日文假名使用 JP 字体
-            glyphs = extract_glyphs_by_range(cjk_jp_font, start, end)
-            print(f"  {description}: {len(glyphs)} glyphs (from CJK JP)")
-        else:
-            # 其他字符使用基础字体
+        if range_name in latin_ranges:
+            # Latin 字符使用基础字体（Iosevka）
             glyphs = extract_glyphs_by_range(base_font, start, end)
             print(f"  {description}: {len(glyphs)} glyphs (from base)")
+        else:
+            # 所有其他非西文字符使用非西文字体（得意黑/霞鹜文楷）
+            glyphs = extract_glyphs_by_range(non_latin_font, start, end)
+            if not glyphs:
+                # 非西文字体没有覆盖此范围，尝试从基础字体提取
+                glyphs = extract_glyphs_by_range(base_font, start, end)
+                print(f"  {description}: {len(glyphs)} glyphs (from base, fallback)")
+            else:
+                print(f"  {description}: {len(glyphs)} glyphs (from non-latin)")
 
         # 合并字形（不覆盖已存在的）
         for unicode_val, glyph_name in glyphs.items():
@@ -173,33 +178,15 @@ def merge_fonts(base_path, cjk_sc_path, cjk_jp_path, output_dir, ranges_config):
     # 使用 base_font 作为基础
     output_font = copy.deepcopy(base_font)
 
-    # 添加 CJK 字符
-    added_cjk = 0
+    # 添加非 Latin 字符（从非西文字体）
+    added_non_latin = 0
     for unicode_val, (glyph_name, range_name) in all_glyphs.items():
-        if range_name.startswith('cjk_') or range_name in ['hangul_syllables', 'hangul_jamo', 'hangul_jamo_extended_a', 'hangul_jamo_extended_b']:
+        if range_name not in latin_ranges:
             if glyph_name not in output_font['glyf'].glyphs:
-                if copy_glyph(cjk_sc_font, output_font, glyph_name):
-                    added_cjk += 1
+                if copy_glyph(non_latin_font, output_font, glyph_name):
+                    added_non_latin += 1
 
-    # 添加日文假名
-    added_jp = 0
-    for unicode_val, (glyph_name, range_name) in all_glyphs.items():
-        if range_name in ['hiragana', 'katakana', 'katakana_phonetic_extensions']:
-            if glyph_name not in output_font['glyf'].glyphs:
-                if copy_glyph(cjk_jp_font, output_font, glyph_name):
-                    added_jp += 1
-
-    # 添加其他字符
-    added_other = 0
-    for unicode_val, (glyph_name, range_name) in all_glyphs.items():
-        if not range_name.startswith('cjk_') and range_name not in ['hangul_syllables', 'hangul_jamo', 'hangul_jamo_extended_a', 'hangul_jamo_extended_b', 'hiragana', 'katakana', 'katakana_phonetic_extensions']:
-            if glyph_name not in output_font['glyf'].glyphs:
-                if copy_glyph(base_font, output_font, glyph_name):
-                    added_other += 1
-
-    print(f"  Added {added_cjk} CJK glyphs")
-    print(f"  Added {added_jp} Japanese kana glyphs")
-    print(f"  Added {added_other} other glyphs")
+    print(f"  Added {added_non_latin} non-Latin glyphs")
 
     # 更新 cmap 表
     print("\n[4/6] Updating cmap table...")
@@ -248,7 +235,7 @@ def merge_fonts(base_path, cjk_sc_path, cjk_jp_path, output_dir, ranges_config):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Merge multiple fonts into one (Base + CJK)"
+        description="Merge multiple fonts into one (Base + non-Latin)"
     )
     parser.add_argument(
         "--base",
@@ -256,14 +243,9 @@ def main():
         help="Base font path (English glyphs + Icons, e.g., Iosevka Nerd)"
     )
     parser.add_argument(
-        "--cjk-sc",
+        "--non-latin",
         required=True,
-        help="CJK SC font path (Noto Sans CJK SC)"
-    )
-    parser.add_argument(
-        "--cjk-jp",
-        required=True,
-        help="CJK JP font path (Noto Sans CJK JP)"
+        help="Non-Latin font path (e.g., Smiley Sans, LXGW WenKai Mono)"
     )
     parser.add_argument(
         "--output",
@@ -281,15 +263,14 @@ def main():
     # 检查文件是否存在
     for path, name in [
         (args.base, "Base font"),
-        (args.cjk_sc, "CJK SC font"),
-        (args.cjk_jp, "CJK JP font"),
+        (args.non_latin, "Non-Latin font"),
         (args.ranges, "Unicode ranges config"),
     ]:
         if not os.path.exists(path):
             print(f"Error: {name} not found: {path}", file=sys.stderr)
             sys.exit(1)
 
-    merge_fonts(args.base, args.cjk_sc, args.cjk_jp, args.output, args.ranges)
+    merge_fonts(args.base, args.non_latin, args.output, args.ranges)
 
 if __name__ == "__main__":
     main()

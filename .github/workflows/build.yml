@@ -43,11 +43,13 @@ jobs:
         id: deps
         run: |
           NF_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['nerd-fonts']['version'])")
-          NOTO_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['noto-cjk']['version'])")
+          LXGW_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['lxgw-wenkai']['version'])")
+          SMILEY_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['smiley-sans']['version'])")
           IOSEVKA_REF=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['iosevka'].get('tag') or c['iosevka'].get('branch', 'main'))")
 
           echo "nf_version=$NF_VERSION" >> $GITHUB_OUTPUT
-          echo "noto_version=$NOTO_VERSION" >> $GITHUB_OUTPUT
+          echo "lxgw_version=$LXGW_VERSION" >> $GITHUB_OUTPUT
+          echo "smiley_version=$SMILEY_VERSION" >> $GITHUB_OUTPUT
           echo "iosevka_ref=$IOSEVKA_REF" >> $GITHUB_OUTPUT
 
       - name: Clone Iosevka
@@ -94,35 +96,40 @@ jobs:
             --required
           ls -lh sources/nerd-fonts/
 
-      - name: Download CJK fonts
+      - name: Download LxgwWenKai Mono
         run: |
-          NOTO_VERSION=${{ steps.deps.outputs.noto_version }}
-          mkdir -p sources/cjk
+          LXGW_VERSION=${{ steps.deps.outputs.lxgw_version }}
+          mkdir -p sources/non-latin
 
-          # Noto CJK 2.004 以 zip 形式分发：
-          #   Mono (11_/13_) 仅含 Regular/Bold 两个字重
-          #   Sans (06_/08_)  含 Thin/Light/DemiLight/Regular/Medium/Bold/Black 七个字重
-          for spec in \
-              "13_NotoSansMonoCJKsc.zip" \
-              "11_NotoSansMonoCJKjp.zip" \
-              "08_NotoSansCJKsc.zip" \
-              "06_NotoSansCJKjp.zip"; do
-            echo "Downloading ${spec}..."
-            curl -fL -o "sources/cjk/${spec}" \
-              "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/${spec}"
-            python3 scripts/extract-zip.py "sources/cjk/${spec}" sources/cjk --suffix .otf
-            rm "sources/cjk/${spec}"
+          echo "Downloading LxgwWenKai Mono v${LXGW_VERSION}..."
+          for weight in Light Regular Medium; do
+            curl -fL -o "sources/non-latin/LXGWWenKaiMono-${weight}.ttf" \
+              "https://github.com/lxgw/LxgwWenKai/releases/download/v${LXGW_VERSION}/LXGWWenKaiMono-${weight}.ttf"
           done
 
           echo "Download complete!"
-          ls -lh sources/cjk/
+          ls -lh sources/non-latin/LXGWWenKaiMono-*.ttf
+
+      - name: Download Smiley Sans
+        run: |
+          SMILEY_VERSION=${{ steps.deps.outputs.smiley_version }}
+          mkdir -p sources/non-latin
+
+          echo "Downloading Smiley Sans v${SMILEY_VERSION}..."
+          curl -fL -o "sources/non-latin/smiley-sans.zip" \
+            "https://github.com/atelier-anchor/smiley-sans/releases/download/v${SMILEY_VERSION}/smiley-sans-v${SMILEY_VERSION}.zip"
+          python3 scripts/extract-zip.py "sources/non-latin/smiley-sans.zip" sources/non-latin --suffix .ttf
+          rm "sources/non-latin/smiley-sans.zip"
+
+          echo "Extracted files:"
+          ls -lh sources/non-latin/
 
       - name: Merge Nerd Fonts icons
         run: |
           echo "Merging Nerd Fonts icons into built fonts..."
           mkdir -p sources/patched
 
-          # 只处理 Upright 样式（Nerd Fonts 只有 Regular 字重，CJK 只有 Upright）
+          # 只处理 Upright 样式（Nerd Fonts 只有 Regular 字重，非西文字体只有 Upright）
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
@@ -163,38 +170,47 @@ jobs:
           echo "Patched fonts:"
           ls -lh sources/patched/
 
-      - name: Merge CJK fonts
+      - name: Merge non-Latin fonts
         run: |
-          echo "Merging CJK fonts..."
+          echo "Merging non-Latin fonts..."
           mkdir -p releases/mono releases/sans
 
           WEIGHTS="Light Regular Bold"
 
           for weight in $WEIGHTS; do
-            # Mono（Noto Mono CJK 没有 Light，回退 Regular）
+            # Mono（使用 LxgwWenKai Mono）
             mono_font="sources/patched/AsukaMono-${weight}.ttf"
             if [ -f "$mono_font" ]; then
-              cjk_weight="$weight"
-              if [ "$cjk_weight" = "Light" ]; then
-                cjk_weight="Regular"
+              # LxgwWenKai Mono 没有 Bold 字重，回退使用 Medium
+              non_latin_weight="$weight"
+              if [ "$non_latin_weight" = "Bold" ]; then
+                non_latin_weight="Medium"
               fi
-              echo "Merging CJK into Mono ${weight} (CJK weight: ${cjk_weight})..."
-              python3 scripts/merge-fonts.py \
-                --base "$mono_font" \
-                --cjk-sc "sources/cjk/NotoSansMonoCJKsc-${cjk_weight}.otf" \
-                --cjk-jp "sources/cjk/NotoSansMonoCJKjp-${cjk_weight}.otf" \
-                --output "releases/mono/"
+              LXGW_TTF="sources/non-latin/LXGWWenKaiMono-${non_latin_weight}.ttf"
+              if [ -f "$LXGW_TTF" ]; then
+                echo "Merging LxgwWenKai Mono into AsukaMono ${weight} (weight: ${non_latin_weight})..."
+                python3 scripts/merge-fonts.py \
+                  --base "$mono_font" \
+                  --non-latin "$LXGW_TTF" \
+                  --output "releases/mono/"
+              else
+                echo "Warning: $LXGW_TTF not found, skipping AsukaMono ${weight}"
+              fi
             fi
 
-            # Sans（Noto Sans CJK 有 Light 字重）
+            # Sans（使用 Smiley Sans）
             sans_font="sources/patched/AsukaSans-${weight}.ttf"
             if [ -f "$sans_font" ]; then
-              echo "Merging CJK into Sans ${weight}..."
-              python3 scripts/merge-fonts.py \
-                --base "$sans_font" \
-                --cjk-sc "sources/cjk/NotoSansCJKsc-${weight}.otf" \
-                --cjk-jp "sources/cjk/NotoSansCJKjp-${weight}.otf" \
-                --output "releases/sans/"
+              SMILEY_TTF=$(find sources/non-latin -name "*.ttf" -not -name "LXGWWenKai*" -type f | head -1)
+              if [ -n "$SMILEY_TTF" ]; then
+                echo "Merging Smiley Sans ($SMILEY_TTF) into AsukaSans ${weight}..."
+                python3 scripts/merge-fonts.py \
+                  --base "$sans_font" \
+                  --non-latin "$SMILEY_TTF" \
+                  --output "releases/sans/"
+              else
+                echo "Warning: No Smiley Sans ttf found, skipping AsukaSans ${weight}"
+              fi
             fi
           done
 

@@ -10,28 +10,27 @@ tag = "v34.8.1"
 repo = "https://github.com/ryanoasis/nerd-fonts"
 version = "3.3.0"
 
-[noto-cjk]
-repo = "https://github.com/notofonts/noto-cjk"
-version = "2.004"
+# 霞鹜文楷 - 用于 AsukaMono 的非西文字符
+[lxgw-wenkai]
+repo = "https://github.com/lxgw/LxgwWenKai"
+version = "1.522"
 
-  # 等宽版本（Noto CJK 2.004 起以 zip 分发，Mono 仅含 Regular/Bold）
-  [noto-cjk.mono]
-  Regular.sc = "NotoSansMonoCJKsc-Regular.otf"
-  Regular.jp = "NotoSansMonoCJKjp-Regular.otf"
-  Bold.sc = "NotoSansMonoCJKsc-Bold.otf"
-  Bold.jp = "NotoSansMonoCJKjp-Bold.otf"
-  # Noto Mono CJK 没有 Light 字重，Light 字重回退使用 Regular
-  Light.sc = "NotoSansMonoCJKsc-Regular.otf"
-  Light.jp = "NotoSansMonoCJKjp-Regular.otf"
+  # 等宽版本（Mono）
+  [lxgw-wenkai.mono]
+  Light = "LXGWWenKaiMono-Light.ttf"
+  Regular = "LXGWWenKaiMono-Regular.ttf"
+  Medium = "LXGWWenKaiMono-Medium.ttf"
 
-  # 比例版本
-  [noto-cjk.sans]
-  Regular.sc = "NotoSansCJKsc-Regular.otf"
-  Regular.jp = "NotoSansCJKjp-Regular.otf"
-  Bold.sc = "NotoSansCJKsc-Bold.otf"
-  Bold.jp = "NotoSansCJKjp-Bold.otf"
-  Light.sc = "NotoSansCJKsc-Light.otf"
-  Light.jp = "NotoSansCJKjp-Light.otf"
+  # 比例版本（用于 Sans）
+  [lxgw-wenkai.proportional]
+  Light = "LXGWWenKai-Light.ttf"
+  Regular = "LXGWWenKai-Regular.ttf"
+  Medium = "LXGWWenKai-Medium.ttf"
+
+# 得意黑 - 用于 AsukaSans 的非西文字符
+[smiley-sans]
+repo = "https://github.com/atelier-anchor/smiley-sans"
+version = "2.0.1"
 
 # Iosevka 构建字重
 [build-weights]

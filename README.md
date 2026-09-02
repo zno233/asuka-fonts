@@ -1,6 +1,6 @@
 # Asuka Fonts
 
-基于 [Iosevka](https://github.com/be5invis/Iosevka) 的字体合并项目，集成 Nerd Fonts 图标和 CJK 字符支持。英文字形配置参考自 [Hanekokoro Fonts](https://github.com/ShadowRZ/hanekokoro-fonts)。
+基于 [Iosevka](https://github.com/be5invis/Iosevka) 的字体合并项目，集成 Nerd Fonts 图标和非西文字符支持。英文字形配置参考自 [Hanekokoro Fonts](https://github.com/ShadowRZ/hanekokoro-fonts)。
 
 ## 字体来源
 
@@ -8,14 +8,14 @@
 |------|------|------|
 | **英文字形** | [Iosevka](https://github.com/be5invis/Iosevka) + Asuka 构建配置 | 自定义字形变体 |
 | **图标** | [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) | 终端图标支持 |
-| **中文** | [Noto Sans CJK SC](https://github.com/notofonts/noto-cjk) | 简体中文 |
-| **日文** | [Noto Sans CJK JP](https://github.com/notofonts/noto-cjk) | 日文假名 |
+| **Mono CJK** | [LXGW WenKai Mono](https://github.com/lxgw/LxgwWenKai) | 等宽字体的非西文字符 |
+| **Sans CJK** | [Smiley Sans](https://github.com/atelier-anchor/smiley-sans) | 比例字体的非西文字符 |
 
 ## 特性
 
 - ✅ 自定义 Iosevka 字形设计
 - ✅ Nerd Fonts 图标支持（~9000+ 图标）
-- ✅ CJK 字符支持（中日韩统一汉字）
+- ✅ 非西文字符支持（中日韩、希腊、西里尔等）
 - ✅ 两种变体：Sans（比例）和 Mono（等宽）
 - ✅ 多字重支持（Light/Regular/Bold）
 
@@ -29,14 +29,14 @@
 
 ### 构建的字体变体
 
-| 字体 | 间距 | 字重 | CJK 字体 | 用途 |
+| 字体 | 间距 | 字重 | 非西文字体 | 用途 |
 |------|------|------|----------|------|
-| `AsukaMono-Light` | 等宽 | Light | Noto Sans Mono CJK Light | 终端、代码 |
-| `AsukaMono-Regular` | 等宽 | Regular | Noto Sans Mono CJK | 终端、代码 |
-| `AsukaMono-Bold` | 等宽 | Bold | Noto Sans Mono CJK Bold | 终端、代码 |
-| `AsukaSans-Light` | 比例 | Light | Noto Sans CJK Light | 阅读、文档 |
-| `AsukaSans-Regular` | 比例 | Regular | Noto Sans CJK | 阅读、文档 |
-| `AsukaSans-Bold` | 比例 | Bold | Noto Sans CJK Bold | 阅读、文档 |
+| `AsukaMono-Light` | 等宽 | Light | LXGW WenKai Mono Light | 终端、代码 |
+| `AsukaMono-Regular` | 等宽 | Regular | LXGW WenKai Mono Regular | 终端、代码 |
+| `AsukaMono-Bold` | 等宽 | Bold | LXGW WenKai Mono Medium | 终端、代码 |
+| `AsukaSans-Light` | 比例 | Light | Smiley Sans | 阅读、文档 |
+| `AsukaSans-Regular` | 比例 | Regular | Smiley Sans | 阅读、文档 |
+| `AsukaSans-Bold` | 比例 | Bold | Smiley Sans | 阅读、文档 |
 
 ## 下载
 
@@ -103,7 +103,8 @@ cd asuka-fonts
 
 # 2. 下载依赖
 NF_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['nerd-fonts']['version'])")
-NOTO_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['noto-cjk']['version'])")
+LXGW_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['lxgw-wenkai']['version'])")
+SMILEY_VERSION=$(python3 -c "import toml; c=toml.load('dependencies.toml'); print(c['smiley-sans']['version'])")
 
 mkdir -p sources
 
@@ -115,30 +116,26 @@ wget -O sources/IosevkaNerdFont-Regular.ttf \
 wget -O sources/IosevkaNerdFontSans-Regular.ttf \
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v${NF_VERSION}/IosevkaNerdFontSans-Regular.ttf"
 
-# CJK Mono
-wget -O sources/NotoSansMonoCJKsc-Regular.otf \
-  "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/04_NotoSansMonoCJKsc-Regular.otf"
-wget -O sources/NotoSansMonoCJKjp-Regular.otf \
-  "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/01_NotoSansMonoCJKjp-Regular.otf"
+# LXGW WenKai Mono (for AsukaMono)
+wget -O sources/LXGWWenKaiMono-Regular.ttf \
+  "https://github.com/lxgw/LxgwWenKai/releases/download/v${LXGW_VERSION}/LXGWWenKaiMono-Regular.ttf"
 
-# CJK Sans
-wget -O sources/NotoSansCJKsc-Regular.otf \
-  "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/08_NotoSansCJKsc-Regular.otf"
-wget -O sources/NotoSansCJKjp-Regular.otf \
-  "https://github.com/notofonts/noto-cjk/releases/download/Sans${NOTO_VERSION}/04_NotoSansCJKjp-Regular.otf"
+# Smiley Sans (for AsukaSans)
+wget -O sources/smiley-sans.zip \
+  "https://github.com/atelier-anchor/smiley-sans/releases/download/v${SMILEY_VERSION}/smiley-sans-v${SMILEY_VERSION}.zip"
+python3 scripts/extract-zip.py sources/smiley-sans.zip sources/ --suffix .ttf
+rm sources/smiley-sans.zip
 
 # 3. 构建 Asuka Mono
 python3 scripts/merge-fonts.py \
   --base sources/IosevkaNerdFont-Regular.ttf \
-  --cjk-sc sources/NotoSansMonoCJKsc-Regular.otf \
-  --cjk-jp sources/NotoSansMonoCJKjp-Regular.otf \
+  --non-latin sources/LXGWWenKaiMono-Regular.ttf \
   --output releases/
 
 # 4. 构建 Asuka Sans
 python3 scripts/merge-fonts.py \
   --base sources/IosevkaNerdFontSans-Regular.ttf \
-  --cjk-sc sources/NotoSansCJKsc-Regular.otf \
-  --cjk-jp sources/NotoSansCJKjp-Regular.otf \
+  --non-latin sources/SmileySans.ttf \
   --output releases/
 
 # 5. 验证
@@ -163,11 +160,13 @@ python3 scripts/verify-fonts.py releases/
 
 - Iosevka: OFL-1.1
 - Nerd Fonts: MIT
-- Noto Sans CJK: OFL-1.1
+- LXGW WenKai: OFL-1.1
+- Smiley Sans: OFL-1.1
 
 ## 致谢
 
 - [Iosevka](https://github.com/be5invis/Iosevka)
 - [Hanekokoro Fonts](https://github.com/ShadowRZ/hanekokoro-fonts) - 英文字形配置参考
 - [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
-- [Noto Sans CJK](https://github.com/notofonts/noto-cjk)
+- [LXGW WenKai](https://github.com/lxgw/LxgwWenKai) - Mono 字体的非西文字符
+- [Smiley Sans](https://github.com/atelier-anchor/smiley-sans) - Sans 字体的非西文字符
