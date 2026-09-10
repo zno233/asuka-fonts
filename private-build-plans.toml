@@ -9,7 +9,7 @@ family = "Asuka Mono"
 spacing = "fontconfig-mono"
 serifs = "sans"
 noCvSs = true
-exportGlyphNames = false
+exportGlyphNames = true
 
   # 构建字重（Iosevka 34+ 的字重由 build plan 的 weights 定义，
   # 不再支持 CLI 传 "ttf::<plan>::<weight>"）
@@ -150,7 +150,7 @@ family = "Asuka Sans"
 spacing = "quasi-proportional"
 serifs = "sans"
 noCvSs = true
-exportGlyphNames = false
+exportGlyphNames = true
 
   # 构建字重（Iosevka 34+ 的字重由 build plan 的 weights 定义，
   # 不再支持 CLI 传 "ttf::<plan>::<weight>"）
